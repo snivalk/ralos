@@ -1,0 +1,39 @@
+.main-window {
+  background: black;
+}
+
+.star {
+  fill: white;
+}
+
+.halo {
+  fill: none;
+  stroke-width: 1;
+}
+
+.statistic {
+  font-family: Verdana;
+  font-size: 14pt;
+  fill: green;
+}
+
+.control {
+  font-family: Verdana;
+  font-size: 14pt;
+  fill: #609;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+.control-inactive {
+  fill: #306;
+  cursor: pointer;
+}
+
+.planet {
+  font-family: Verdana;
+  font-size: 11pt;
+  fill: blue;
+}

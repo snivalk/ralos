@@ -1,20 +1,147 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{title}}!
-  </h1>
-  <img width="300" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<svg class="main-window"
+     [style.width]="mainWindowWidth"
+     [style.height]="mainWindowHeight"
+     (window:resize)="onResize($event)"
+     (click)="select_body($event)"
+     xmlns="http://www.w3.org/2000/svg" version="1.1"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
 
+  <g [attr.transform]="'translate(' + mainWindowWidth/2 + ',' + mainWindowHeight/2 + ')'">
+
+    <g *ngFor="let body of bodies; let i=index">
+
+      <path *ngIf="body.name && !body.absorbed && body.show_trajectory"
+            [attr.d]="body.path(zoom,camera)"
+            fill="transparent"
+            stroke="#0b0"
+            stroke-width="0.25"/>
+
+      <circle class="star"
+              *ngIf="!body.absorbed"
+              [attr.cx]="zoom*(body.position.x - camera.x)"
+              [attr.cy]="zoom*(body.position.y - camera.y)"
+              [attr.r]="zoom*body.radius <= 0.35 ? 0.35 : zoom*body.radius" />
+
+      <circle class="halo"
+              *ngIf="!body.absorbed && body.just_collided > 0"
+              [attr.stroke]="'rgb('+10*body.just_collided+',0,0)'"
+              [attr.cx]="zoom*(body.position.x - camera.x)"
+              [attr.cy]="zoom*(body.position.y - camera.y)"
+              [attr.r]="zoom*body.radius <= 0.5 ? 5.5 : zoom*body.radius + 5" />
+
+      <text *ngIf="labels && !body.absorbed &&  ( i == follow || body.name )"
+            [attr.x]="zoom*(body.position.x  - camera.x)"
+            [attr.y]="zoom*(body.position.y - camera.y - body.radius)-16"
+            style="text-anchor: middle"
+            class="planet">
+            {{body.name ? body.name : "" + i}}
+          </text>
+
+    </g>
+
+  </g>
+
+  <g transform="translate(16,30)">
+
+    <text x="0" y="0" class="statistic">
+      Objects: {{num_bodies}}
+    </text>
+
+    <text x="0" y="30" class="statistic">
+      View: {{camera.x|number:'1.0-0'}}, {{camera.y|number:'1.0-0'}}
+    </text>
+
+    <text x="0" [attr.y]="60" class="statistic">
+      Load: {{step_time}} ms
+    </text>
+
+    <text x="0" y="120" class="control" (click)="running = !running; $event.stopPropagation()">
+      [{{running ? 'Stop' : 'Start'}}]
+    </text>
+
+    <text x="0" y="150" class="control" (click)="dt = dt/2; $event.stopPropagation()">
+      [Slower]
+    </text>
+
+    <text x="85" y="150" class="control" (click)="dt = dt < 0.02 ? dt*2 : dt; $event.stopPropagation()">
+      [Faster]
+    </text>
+
+    <text x="0" [attr.y]="180" class="statistic">
+      dt: {{dt}}
+    </text>
+
+    <text x="0" y="240" class="control" (click)="zoom = zoom*2; $event.stopPropagation()">
+      [Zoom In]
+    </text>
+
+    <text x="0" y="270" class="control" (click)="zoom = zoom/2; $event.stopPropagation()">
+      [Zoom Out]
+    </text>
+
+    <text x="0" y="300" class="control" (click)="collisions = !collisions; $event.stopPropagation()">
+      [Collisions]: {{collisions ? 'on': 'off'}}
+    </text>
+
+    <text x="0" y="330" class="control" (click)="labels = !labels; $event.stopPropagation()">
+      [Labels]: {{labels ? 'on': 'off'}}
+    </text>
+
+    <g *ngFor="let planet of system; let i=index">
+
+      <text *ngIf="!bodies[planet.index].absorbed"
+           [attr.x]="mainWindowWidth-70" [attr.y]="150+30*i"
+           style="text-anchor: end"
+           [ngClass]="follow == planet.index ? 'control' : 'control control-inactive'"
+           (click)="follow = planet.index; $event.stopPropagation()">
+        [{{planet.name}}]
+      </text>
+
+      <text *ngIf="!bodies[planet.index].absorbed"
+           [attr.x]="mainWindowWidth-40" [attr.y]="150+30*i"
+           style="text-anchor: end"
+           class="control"
+           (click)="bodies[planet.index].show_trajectory = !bodies[planet.index].show_trajectory; $event.stopPropagation()">
+        {{bodies[planet.index].show_trajectory ? 'O' : '-'}}
+      </text>
+
+    </g>
+
+    <g *ngIf="!bodies[follow].absorbed">
+
+      <text [attr.x]="mainWindowWidth-30"
+            y="0"
+            style="text-anchor: end"
+            class="statistic">{{bodies[follow].name ? bodies[follow].name : "Object:" + follow}}</text>
+
+      <text [attr.x]="mainWindowWidth-30"
+            y="30"
+            style="text-anchor: end"
+            class="statistic">Mass: {{bodies[follow].mass|number:'1.0-0'}}</text>
+
+      <text [attr.x]="mainWindowWidth-30"
+            y="60"
+            style="text-anchor: end"
+            class="statistic">Fraction: {{bodies[follow].mass/total_mass|number}}</text>
+
+      <text [attr.x]="mainWindowWidth-30"
+            y="90"
+            style="text-anchor: end"
+            class="statistic">Distance: {{distance[0][follow]|number:'1.0-0'}}</text>
+
+    </g>
+
+  </g>
+
+  <g [attr.transform]="'translate(' + 32 + ',' + (mainWindowHeight-20) + ')'">
+    <g *ngFor="let bin of bins; let i=index">
+      <rect *ngIf="i<20"
+            [attr.x] = "20*bins[i].value"
+            [attr.y] = "-bins[i].number/2"
+            [attr.width] = "10*(bins[i+1].value-bins[i].value)"
+            [attr.height] = "bins[i].number/2"
+            fill="#345" />
+    </g>
+  </g>
+
+</svg>

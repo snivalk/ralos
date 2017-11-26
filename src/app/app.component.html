@@ -1,4 +1,65 @@
-<svg class="main-window"
+<canvas id="canvas"
+        class="main-canvas"
+        [attr.width]="mainWindowWidth"
+        [attr.height]="mainWindowHeight"
+        (window:resize)="onResize($event)"
+        (click)="select_body($event)"></canvas>
+
+<div class="controls-left">
+
+  <div class="statistic">objects: {{num_bodies}}</div>
+
+  <div class="statistic">dt: {{dt}}</div>
+
+  <div class="divider"></div>
+
+  <div class="control" (click)="zoom = zoom*2; $event.stopPropagation()">
+      [Zoom In]
+    </div>
+
+  <div class="control" (click)="zoom = zoom/2; $event.stopPropagation()">
+    [Zoom Out]
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="control" (click)="dt = dt/2; $event.stopPropagation()">
+    [Slower]
+  </div>
+
+  <div class="control" (click)="dt = dt < 0.02 ? dt*2 : dt; $event.stopPropagation()">
+    [Faster]
+  </div>
+
+</div>
+
+<div class="controls-right">
+
+  <div *ngFor="let planet of system; let i=index">
+
+    <div *ngIf="bodies[planet.index] && !bodies[planet.index].absorbed"
+         [attr.x]="mainWindowWidth-70" [attr.y]="150+30*i"
+         style="float:right; clear:right;"
+         [ngClass]="follow == planet.index ? 'control' : 'control control-inactive'"
+         (click)="follow = planet.index; $event.stopPropagation()">
+      [{{planet.name}}]
+    </div>
+
+
+
+    <!-- <div *ngIf="!bodies[planet.index].absorbed"
+         [attr.x]="mainWindowWidth-40" [attr.y]="150+30*i"
+         style="text-anchor: end"
+         class="control"
+         (click)="bodies[planet.index].show_trajectory = !bodies[planet.index].show_trajectory; $event.stopPropagation()">
+      {{bodies[planet.index].show_trajectory ? 'O' : '-'}}
+    </div> -->
+
+  </div>
+
+</div>
+
+<!-- <svg class="main-window"
      [style.width]="mainWindowWidth"
      [style.height]="mainWindowHeight"
      (window:resize)="onResize($event)"
@@ -144,4 +205,4 @@
     </g>
   </g>
 
-</svg>
+</svg> -->

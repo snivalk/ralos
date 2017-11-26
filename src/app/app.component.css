@@ -1,4 +1,4 @@
-.main-window {
+.main-canvas {
   background: black;
 }
 
@@ -17,14 +17,42 @@
   fill: green;
 }
 
+.divider {
+  height: 16px;
+  width: 100px;
+}
+
+.controls-left, .controls-right {
+  position: absolute;
+  top: 0;
+  padding: 8px;
+}
+
+.controls-left {
+  left: 0;
+}
+
+.controls-right {
+  right: 0;
+  align: right;
+}
+
 .control {
+  position: relative;
   font-family: Verdana;
   font-size: 14pt;
-  fill: #609;
+  color: #609;
   cursor: pointer;
   user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
+}
+
+.statistic {
+  position: relative;
+  font-family: Verdana;
+  font-size: 14pt;
+  color: #906;
+  cursor: pointer;
+  user-select: none;
 }
 
 .control-inactive {
